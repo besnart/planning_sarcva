@@ -1,7 +1,13 @@
 import os
+import sys
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Application embarquee dans un executable PyInstaller : la base SQLite vit
+# dans le dossier courant (a cote de l'exe), pas dans le bundle en lecture seule.
+FROZEN = getattr(sys, "frozen", False)
+DOSSIER_DONNEES = Path(os.getcwd()) if FROZEN else BASE_DIR
 
 SECRET_KEY = os.environ.get(
     "DJANGO_SECRET_KEY",
@@ -53,7 +59,7 @@ WSGI_APPLICATION = "config.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "NAME": DOSSIER_DONNEES / "db.sqlite3",
     }
 }
 
@@ -70,7 +76,7 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = "static/"
-STATIC_ROOT = BASE_DIR / "staticfiles"
+STATIC_ROOT = DOSSIER_DONNEES / "staticfiles"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
