@@ -1,26 +1,23 @@
 @echo off
-rem Windows : double-cliquer ce fichier lance le planning et ouvre le navigateur.
+rem Windows : double-cliquer ce fichier lance le planning et ouvre le navigateur
+rem une fois le serveur pret. Necessite Python 3.12+ (python.org, cocher "Add python.exe to PATH").
 cd /d "%~dp0"
 
-if not exist .venv\Scripts\activate.bat (
-  echo Creation de l'environnement virtuel...
-  python -m venv .venv
+set "PY="
+where py >nul 2>nul && set "PY=py -3"
+if "%PY%"=="" (
+  where python >nul 2>nul && set "PY=python"
 )
-call .venv\Scripts\activate.bat
-
-echo Installation des dependances...
-pip install -q -r requirements.txt
-
-python manage.py migrate --noinput
-
-if not exist db.sqlite3 (
-  if "%DEMO_PASSWORD%"=="" set DEMO_PASSWORD=demo
-  echo Mot de passe de demo : %DEMO_PASSWORD% ^(a changer via la variable DEMO_PASSWORD^)
-  echo Creation des donnees de demonstration...
-  python manage.py init_demo
+if "%PY%"=="" (
+  echo Python 3.12 ou plus est requis pour lancer le planning.
+  echo Telechargez-le sur https://www.python.org/downloads/ en cochant "Add python.exe to PATH".
+  start https://www.python.org/downloads/
+  pause
+  exit /b 1
 )
 
-if "%PORT%"=="" set PORT=8000
-echo Lancement sur http://localhost:%PORT%/ (Ctrl+C pour arreter)
-start http://localhost:%PORT%/
-python manage.py runserver 0.0.0.0:%PORT%
+%PY% start.py
+
+echo.
+echo Le serveur est arrete. Appuyez sur une touche pour fermer cette fenetre.
+pause

@@ -11,16 +11,29 @@ automatique des postes par quadrimestre et modification manuelle possible ensuit
 
 ### Sans aucune ligne de commande (100 % visuel)
 
-1. Télécharger le code : sur la page GitHub de la branche (ou de la PR), bouton vert
-   **Code → Download ZIP**, puis dézipper.
-2. Double-cliquer sur **`start.bat`** (Windows), **`start.command`** (macOS) ou
-   **`start.sh`** (Linux) : le script installe les dépendances, crée la base et un
-   jeu de données de démonstration, lance le serveur et **ouvre le navigateur**.
-3. Tout se teste ensuite au clic dans le navigateur (voir « Scénarios de test »).
+1. Télécharger le code de la branche : ouvrir
+   [la page de la branche](https://github.com/besnart/planning_sarcva/tree/vibe/planning-semi-auto-69dd08)
+   puis bouton vert **Code → Download ZIP** (ou directement
+   [le ZIP de la branche](https://github.com/besnart/planning_sarcva/archive/refs/heads/vibe/planning-semi-auto-69dd08.zip)),
+   puis dézipper. (Sur `main`, le ZIP ne contient pas encore l'application tant que la PR n'est pas fusionnée.)
+2. Installer **Python 3.12+** si absent : [python.org](https://www.python.org/downloads/)
+   en cochant **« Add python.exe to PATH »** à l'installation.
+3. Double-cliquer sur **`start.bat`** (Windows), **`start.command`** (macOS) ou
+   **`start.sh`** (Linux) : le lanceur installe les dépendances, crée la base et un
+   jeu de données de démonstration, démarre le serveur, puis **ouvre le navigateur
+   uniquement quand le serveur répond**.
+4. Tout se teste ensuite au clic dans le navigateur (voir « Scénarios de test »).
    Le mot de passe des comptes de démo vaut `demo` par défaut (variable
-   `DEMO_PASSWORD` pour le changer avant le lancement).
+   `DEMO_PASSWORD` à définir avant le lancement pour le changer).
 
 Comptes de démo : `admin` (Super Administrateur), `bernard`, `caron` (Utilisateurs).
+
+**Dépannage** : laissez la fenêtre noire (console) ouverte — la fermer arrête le serveur.
+Si le navigateur affiche « site inaccessible / ERR_CONNECTION_REFUSED », attendez le
+message « ouverture du navigateur » dans la console (le navigateur ne s'ouvre plus
+avant que le serveur ne réponde). Si le pare-feu Windows bloque, autorisez Python.
+Si le port 8000 est occupé, relancez avec `PORT=8001` (dans la console :
+`set PORT=8001` puis `start.bat` sous Windows).
 
 ### En ligne de commande
 
