@@ -1,0 +1,13 @@
+{% extends "planning/base.html" %}
+{% block titre %}Praticien — Planning SARCVA{% endblock %}
+{% block contenu %}
+<div class="carte">
+  <h1>{% if praticien %}Modifier {{ praticien.nom }}{% else %}Nouveau praticien{% endif %}</h1>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="bouton">Enregistrer</button>
+    <a href="{% url 'praticiens' %}">Annuler</a>
+  </form>
+</div>
+{% endblock %}

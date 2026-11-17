@@ -1,0 +1,142 @@
+{% extends "planning/base.html" %}
+{% block titre %}{{ mois_nom }} {{ annee }} — Planning SARCVA{% endblock %}
+{% block contenu %}
+
+<div class="entete-planning">
+  <form method="get" action="" class="selecteurs">
+    <label>Année
+      <select name="annee" onchange="this.form.submit()">
+        {% for a in annees %}
+          <option value="{{ a }}" {% if a == annee %}selected{% endif %}>{{ a }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Mois
+      <select name="mois" onchange="this.form.submit()">
+        {% for m in mois_noms %}
+          <option value="{{ forloop.counter }}" {% if forloop.counter == mois %}selected{% endif %}>{{ m }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <noscript><button type="submit" class="bouton">Voir</button></noscript>
+  </form>
+  <input type="hidden" id="annee-courante" value="{{ annee }}">
+  <script>
+    // Le menu deroulant redirige vers le mois choisi.
+    document.querySelectorAll('.selecteurs select').forEach(function (s) {
+      s.addEventListener('change', function () {
+        var annee = document.querySelector('.selecteurs select[name=annee]').value;
+        var mois = document.querySelector('.selecteurs select[name=mois]').value;
+        window.location.href = '/planning/' + annee + '/' + mois + '/';
+      });
+    });
+  </script>
+
+  <h1>{{ mois_nom }} {{ annee }}</h1>
+
+  <div class="actions">
+    {% if peut_modifier and not edit %}
+      <a class="bouton" href="?edit=1">Modifier</a>
+    {% endif %}
+    {% if edit %}
+      <a class="bouton" href="?">Lecture seule</a>
+    {% endif %}
+    {% if peut_modifier %}
+      <form method="post" action="{% url 'generer_quadrimestre' annee mois %}" class="inline generation">
+        {% csrf_token %}
+        <select name="annee">
+          {% for a in annees %}<option value="{{ a }}" {% if a == annee %}selected{% endif %}>{{ a }}</option>{% endfor %}
+        </select>
+        <select name="quadrimestre">
+          {% for q, _ in quadrimestres.items %}
+            <option value="{{ q }}" {% if q == trimestre_courant %}selected{% endif %}>Q{{ q }}</option>
+          {% endfor %}
+        </select>
+        <button type="submit" class="bouton danger"
+                onclick="return confirm('Générer automatiquement le quadrimestre choisi ? Les postes AI/CA manuels sont conservés.')">
+          Générer le quadrimestre
+        </button>
+      </form>
+    {% endif %}
+  </div>
+</div>
+
+<div class="planning-scroll">
+  {% for semaine in semaines %}
+  <section class="semaine">
+    {% for jour in semaine %}
+    <div class="jour {% if jour.date.month != mois %}hors-mois{% endif %}
+         {% if jour.date == aujourdhui %}aujourdhui{% endif %}
+         {% if jour.ferie %}ferie{% endif %}">
+      <div class="jour-entete">
+        <span class="jour-nom">{{ jour.date|date:"D" }}</span>
+        <span class="jour-num">{{ jour.date|date:"j" }}</span>
+        {% if jour.ferie %}<span class="badge-ferie" title="Jour férié">JF</span>{% endif %}
+      </div>
+
+      {% if edit %}
+      <div class="fermetures">
+        {% for section in sections %}
+        <form method="post" action="{% url 'basculer_fermeture' annee mois %}" class="inline">
+          {% csrf_token %}
+          <input type="hidden" name="date" value="{{ jour.date|date:'Y-m-d' }}">
+          <input type="hidden" name="section" value="{{ section }}">
+          <button type="submit" class="fermeture {% if section in jour.fermetures %}fermee{% endif %}"
+                  title="Ouvrir/fermer {{ section }}">{{ section|slice:":3" }}</button>
+        </form>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% for p in jour.postes %}
+      <div class="poste section-{{ p.poste.section|lower }} part-{{ p.poste.part }}">
+        <div class="poste-libelle">
+          <span>{{ p.poste.label_complet }}</span>
+          {% if p.etiquette %}<span class="etiquette">{{ p.etiquette }}</span>{% endif %}
+          {% if p.poste.heures %}<span class="heures">{{ p.poste.heures }}h</span>{% endif %}
+        </div>
+        {% if edit %}
+          <form method="post" action="{% url 'modifier_poste' annee mois %}" class="inline">
+            {% csrf_token %}
+            <input type="hidden" name="date" value="{{ jour.date|date:'Y-m-d' }}">
+            <input type="hidden" name="section" value="{{ p.poste.section }}">
+            <input type="hidden" name="code" value="{{ p.poste.code }}">
+            <input type="hidden" name="part" value="{{ p.poste.part }}">
+            <input type="hidden" name="index" value="{{ p.poste.index }}">
+            <select name="praticien_id" onchange="this.form.submit()" {% if not p.poste.assignable %}disabled{% endif %}>
+              <option value="">—</option>
+              {% for pr in praticiens %}
+                <option value="{{ pr.pk }}" {% if p.praticien and p.praticien.pk == pr.pk %}selected{% endif %}>{{ pr.nom }}</option>
+              {% endfor %}
+            </select>
+          </form>
+          {% if p.poste.section == "BLOC" %}
+          <form method="post" action="{% url 'modifier_etiquette' annee mois %}" class="inline">
+            {% csrf_token %}
+            <input type="hidden" name="date" value="{{ jour.date|date:'Y-m-d' }}">
+            <input type="hidden" name="code" value="{{ p.poste.code }}">
+            <select name="etiquette" onchange="this.form.submit()">
+              <option value="">—</option>
+              {% for e in etiquettes_bloc %}
+                <option value="{{ e }}" {% if p.etiquette == e %}selected{% endif %}>{{ e }}</option>
+              {% endfor %}
+            </select>
+          </form>
+          {% endif %}
+        {% else %}
+          <span class="praticien">{{ p.praticien.nom|default:"—" }}</span>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </section>
+  {% endfor %}
+</div>
+
+<p class="legende">
+  Sections : réanimation (REA 1-4, DJ, garde), blocs 1-6 (étiquettes CEC/LASER/CONGENITAL/STRUCTUREL/VASCULAIRE),
+  CPA, consultation PR, régulation/VPA, KT, astreinte, AI, CA.
+  Week-ends et jours fériés : garde 24 h et astreinte 12 h.
+</p>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "planning/base.html" %}
+{% block titre %}Praticiens — Planning SARCVA{% endblock %}
+{% block contenu %}
+<h1>Gestion des praticiens</h1>
+<p>Quote-part exprimée en % (100 % = 1747 h/an). Les « L » sont privilégiés sur les plages bloc
+(règle idéale). « DJ » : seul un praticien étiqueté DJ peut être posté en Réanimation DJ.</p>
+<p><a class="bouton" href="{% url 'praticien_nouveau' %}">Ajouter un praticien</a></p>
+<table>
+  <thead>
+    <tr><th>Nom</th><th>Compte</th><th>Quote-part</th><th>Type</th><th>DJ</th><th>Accréditation</th><th></th></tr>
+  </thead>
+  <tbody>
+    {% for p in praticiens %}
+    <tr>
+      <td>{{ p.nom }}</td>
+      <td>{{ p.user.username|default:"—" }}</td>
+      <td>{{ p.quote_part }} %</td>
+      <td>{{ p.type }}</td>
+      <td>{% if p.dj %}oui{% endif %}</td>
+      <td>{{ p.get_niveau_display }}</td>
+      <td>
+        <a href="{% url 'praticien_modifier' p.pk %}">Modifier</a>
+        <form method="post" action="{% url 'praticien_supprimer' p.pk %}" class="inline"
+              onsubmit="return confirm('Supprimer {{ p.nom }} ?')">
+          {% csrf_token %}
+          <button type="submit" class="lien danger">Supprimer</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

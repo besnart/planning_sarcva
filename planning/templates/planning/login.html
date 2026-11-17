@@ -1,0 +1,14 @@
+{% extends "planning/base.html" %}
+{% block titre %}Connexion — Planning SARCVA{% endblock %}
+{% block contenu %}
+<div class="carte">
+  <h1>Connexion</h1>
+  <p>Le planning est lisible sans connexion. La connexion donne accès aux statistiques,
+     aux disponibilités et, selon votre accréditation, à la gestion.</p>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="bouton">Se connecter</button>
+  </form>
+</div>
+{% endblock %}
