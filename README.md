@@ -9,6 +9,21 @@ automatique des postes par quadrimestre et modification manuelle possible ensuit
 
 ## Installation et lancement
 
+### Sans aucune ligne de commande (100 % visuel)
+
+1. Télécharger le code : sur la page GitHub de la branche (ou de la PR), bouton vert
+   **Code → Download ZIP**, puis dézipper.
+2. Double-cliquer sur **`start.bat`** (Windows), **`start.command`** (macOS) ou
+   **`start.sh`** (Linux) : le script installe les dépendances, crée la base et un
+   jeu de données de démonstration, lance le serveur et **ouvre le navigateur**.
+3. Tout se teste ensuite au clic dans le navigateur (voir « Scénarios de test »).
+   Le mot de passe des comptes de démo vaut `demo` par défaut (variable
+   `DEMO_PASSWORD` pour le changer avant le lancement).
+
+Comptes de démo : `admin` (Super Administrateur), `bernard`, `caron` (Utilisateurs).
+
+### En ligne de commande
+
 ```bash
 pip install -r requirements.txt
 python manage.py migrate
@@ -18,6 +33,20 @@ python manage.py runserver 0.0.0.0:8000   # écoute sur toutes les interfaces
 ```
 
 Ouvrir http://localhost:8000/ — la page d'accueil redirige vers le mois courant.
+
+### Scénarios de test (tout au clic, dans le navigateur)
+
+| À tester | Où | Résultat attendu |
+|---|---|---|
+| Lecture de partout | `/planning/2026/1/` sans être connecté | planning visible, aucun bouton d'édition |
+| Stats protégées | `/stats/` en anonyme | redirection vers la page de connexion |
+| Rôles | connexion `bernard` puis `/praticiens/`, `/accreditations/` | 403 ; `/stats/`, `/disponibilites/` OK |
+| Édition | connexion `admin`, bouton **Modifier** sur le planning | listes de praticiens, fermetures, étiquettes |
+| Règle CA | poster quelqu'un en CA puis ailleurs le même jour | message « règle obligatoire » |
+| Vendredi = dimanche | changer la garde du vendredi | le dimanche suit automatiquement |
+| Génération auto | bouton **Générer le quadrimestre** | planning rempli, AI/CA conservés |
+| Stats | `/stats/?echelle=quadrimestre&annee=2026&quadrimestre=1` | tableaux en journées (0,5 par demi-journée) |
+| Données en tableaux | `/admin/` (compte `admin`) | praticiens, affectations, fermetures éditables visuellement |
 
 Variables d'environnement :
 
