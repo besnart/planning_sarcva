@@ -1,0 +1,64 @@
+name: Build de l'application autonome (EXE sans Python)
+
+on:
+  push:
+    branches: [vibe/planning-semi-auto-69dd08]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            tag: windows
+            label: planning-sarcva.exe (Windows)
+          - os: ubuntu-latest
+            tag: linux
+            label: planning-sarcva (Linux)
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Installer les dependances et PyInstaller
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt pyinstaller
+
+      - name: Construire l'executable autonome
+        run: pyinstaller --clean --noconfirm build.spec --distpath dist --workpath build
+
+      - name: Archiver l'executable (artifact GitHub Actions)
+        uses: actions/upload-artifact@v4
+        with:
+          name: planning-sarcva-${{ matrix.tag }}
+          path: dist/*
+
+      - name: Supprimer l'ancienne release de ce tag
+        if: github.ref == 'refs/heads/vibe/planning-semi-auto-69dd08'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release delete "app-${{ matrix.tag }}-latest" --yes || true
+
+      - name: Publier l'executable dans une release telechargeable sans compte
+        if: github.ref == 'refs/heads/vibe/planning-semi-auto-69dd08'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: app-${{ matrix.tag }}-latest
+          name: "planning-sarcva autonome (${{ matrix.label }}) - sans Python"
+          body: |
+            Application de planning médical autonome : double-clic sur l'exécutable,
+            une console s'ouvre, le navigateur s'ouvre automatiquement sur
+            http://localhost:8000/ quand le serveur est prêt.
+            Comptes de démo : admin / demo (et bernard, caron).
+            Les données sont stockées dans db.sqlite3 à côté de l'exécutable.
+            Ne fermez pas la console : cela arrêterait le serveur.
+          files: dist/*

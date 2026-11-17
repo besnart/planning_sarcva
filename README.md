@@ -35,7 +35,23 @@ avant que le serveur ne réponde). Si le pare-feu Windows bloque, autorisez Pyth
 Si le port 8000 est occupé, relancez avec `PORT=8001` (dans la console :
 `set PORT=8001` puis `start.bat` sous Windows).
 
-### En ligne de commande
+### Version autonome : AUCUN Python requis (recommandé pour tester)
+
+Un exécutable prêt à l'emploi est construit automatiquement par GitHub Actions à
+chaque push sur la branche et publié dans les **Releases** du dépôt :
+
+- [planning-sarcva.exe (Windows)](https://github.com/besnart/planning_sarcva/releases/tag/app-windows-latest)
+- [planning-sarcva (Linux)](https://github.com/besnart/planning_sarcva/releases/tag/app-linux-latest)
+
+Utilisation : téléchargez l'exécutable, double-cliquez dessus. Une console s'ouvre
+(installation de la base + données de démo la première fois), puis **le navigateur
+s'ouvre tout seul** sur http://localhost:8000/ quand le serveur répond. Laissez la
+console ouverte (la fermer arrête le serveur). Les données vivent dans `db.sqlite3`
+à côté de l'exécutable. Comptes de démo : `admin` / `demo`, `bernard` / `demo`,
+`caron` / `demo`. Le build se relance aussi manuellement depuis l'onglet **Actions**
+(« Build de l'application autonome » → *Run workflow*).
+
+### En ligne de commande (avec Python)
 
 ```bash
 pip install -r requirements.txt
