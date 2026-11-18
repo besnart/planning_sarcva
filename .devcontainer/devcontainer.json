@@ -1,0 +1,16 @@
+{
+  "name": "planning-sarcva",
+  "image": "mcr.microsoft.com/devcontainers/python:3.12",
+  "postCreateCommand": "pip install -r requirements.txt && python manage.py migrate --noinput && python manage.py init_demo --password demo",
+  "postStartCommand": "python manage.py runserver 0.0.0.0:8000",
+  "forwardPorts": [8000],
+  "portsAttributes": {
+    "8000": {
+      "label": "Planning SARCVA",
+      "onAutoForward": "openPreview"
+    }
+  },
+  "remoteEnv": {
+    "X_FRAME_OPTIONS": ""
+  }
+}

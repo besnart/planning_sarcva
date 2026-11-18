@@ -1,0 +1,86 @@
+{% extends "planning/base.html" %}
+{% block titre %}Statistiques — Planning SARCVA{% endblock %}
+{% block contenu %}
+<h1>Statistiques — {{ libelle }}</h1>
+<p class="periode">Du {{ debut|date:"d/m/Y" }} au {{ fin|date:"d/m/Y" }} — exprimées en journées
+(une vacation matin ou après-midi = 0,5 journée) et en heures.</p>
+
+<form method="get" action="" class="selecteurs">
+  <label>Échelle
+    <select name="echelle" onchange="this.form.submit()">
+      <option value="mois" {% if echelle == "mois" %}selected{% endif %}>Mois</option>
+      <option value="quadrimestre" {% if echelle == "quadrimestre" %}selected{% endif %}>Quadrimestre</option>
+      <option value="annee" {% if echelle == "annee" %}selected{% endif %}>Année</option>
+    </select>
+  </label>
+  <label>Année
+    <select name="annee" onchange="this.form.submit()">
+      {% for a in annees %}<option value="{{ a }}" {% if a == annee %}selected{% endif %}>{{ a }}</option>{% endfor %}
+    </select>
+  </label>
+  {% if echelle == "mois" %}
+  <label>Mois
+    <select name="mois" onchange="this.form.submit()">
+      {% for m in mois_noms %}<option value="{{ forloop.counter }}" {% if forloop.counter == mois %}selected{% endif %}>{{ m }}</option>{% endfor %}
+    </select>
+  </label>
+  {% endif %}
+  {% if echelle == "quadrimestre" %}
+  <label>Quadrimestre
+    <select name="quadrimestre" onchange="this.form.submit()">
+      <option value="1" {% if quadrimestre == 1 %}selected{% endif %}>Q1 (janv.-avr.)</option>
+      <option value="2" {% if quadrimestre == 2 %}selected{% endif %}>Q2 (mai-août)</option>
+      <option value="3" {% if quadrimestre == 3 %}selected{% endif %}>Q3 (sept.-déc.)</option>
+    </select>
+  </label>
+  {% endif %}
+  <noscript><button type="submit" class="bouton">Voir</button></noscript>
+</form>
+
+<div class="grille-stats">
+  <section class="carte">
+    <h2>Par praticien</h2>
+    <table>
+      <thead><tr><th>Praticien</th><th>Quote-part</th><th>Journées</th><th>Heures</th></tr></thead>
+      <tbody>
+        {% for l in lignes_praticiens %}
+        <tr>
+          <td>{{ l.praticien.nom }}</td>
+          <td>{{ l.praticien.quote_part }} %</td>
+          <td>{{ l.journees|floatformat:1 }}</td>
+          <td>{{ l.heures|floatformat:1 }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4">Aucune affectation sur la période.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="carte">
+    <h2>Par poste</h2>
+    <table>
+      <thead><tr><th>Poste</th><th>Affectations</th><th>Journées</th><th>Heures</th></tr></thead>
+      <tbody>
+        {% for p in postes %}
+        <tr>
+          <td>{{ p.section }} — {{ p.label }}</td>
+          <td>{{ p.effectif }}</td>
+          <td>{{ p.journees|floatformat:1 }}</td>
+          <td>{{ p.heures|floatformat:1 }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4">Aucune affectation sur la période.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="carte total">
+    <h2>Total</h2>
+    <p><strong>{{ totaux.journees|floatformat:1 }}</strong> journées —
+       <strong>{{ totaux.heures|floatformat:1 }}</strong> heures —
+       {{ totaux.affectations }} affectations</p>
+  </section>
+</div>
+{% endblock %}

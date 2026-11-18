@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 2,
+  "kind": "app",
+  "name": "planning-sarcva",
+  "modules": [
+    {
+      "type": "app",
+      "name": "web",
+      "path": ".",
+      "routes": [
+        {
+          "path": "/"
+        }
+      ],
+      "port": 8000,
+      "serve": "server",
+      "runtime": "python",
+      "build": {
+        "context": ".",
+        "dockerfile": "deploy/Dockerfile"
+      },
+      "deploy": {
+        "startCommand": "sh deploy/entrypoint.sh"
+      }
+    },
+    {
+      "type": "managed",
+      "name": "postgres",
+      "engine": "postgres"
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+# Dependances supplementaires pour l'hebergement (Docker / Mistral App / VPS).
+# Le mode hors ligne (exe) n'utilise que requirements.txt.
+gunicorn>=23.0
+dj-database-url>=2.3
+psycopg[binary]>=3.2
