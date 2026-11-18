@@ -161,3 +161,11 @@ tr.ferie td { background: #fdf3f2; }
 
 .grille-stats { display: flex; flex-direction: column; gap: 1rem; }
 .carte.total { border-color: var(--accent); }
+
+.pied {
+  padding: 0.6rem 1rem;
+  font-size: 0.75rem;
+  color: #667;
+  border-top: 1px solid var(--bord);
+  margin-top: 1rem;
+}

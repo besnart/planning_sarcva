@@ -319,6 +319,34 @@ class GenerationTests(TestCase):
                 section__in=("AI", "CA")).count(), 0)
 
 
+class ExportImportTests(TestCase):
+    def test_aller_retour_export_import(self):
+        import json
+        import os
+        import tempfile
+
+        from django.core.management import call_command
+
+        lundi = dt.date(2026, 1, 5)
+        p = _praticien("A")
+        assigner(lundi, ("REANIMATION", "REA2", "journee", 0), p)
+        assigner(lundi, ("CA", "CA", "matin", 0), _praticien("B"))
+
+        with tempfile.TemporaryDirectory() as tmp:
+            fichier = os.path.join(tmp, "export.json")
+            call_command("exporter_donnees", fichier)
+            with open(fichier, encoding="utf-8") as f:
+                data = json.load(f)
+            self.assertTrue(any(d["model"] == "planning.affectation" for d in data))
+            self.assertEqual(Affectation.objects.count(), 2)
+
+            call_command("importer_donnees", fichier, "--vider")
+            self.assertEqual(Affectation.objects.count(), 2)
+            self.assertEqual(Praticien.objects.count(), 2)
+            a = Affectation.objects.get(date=lundi, code="REA2")
+            self.assertEqual(a.praticien.nom, "A")
+
+
 class PermissionsTests(TestCase):
     def setUp(self):
         self.user_visio = User.objects.create_user("visio", password="x")

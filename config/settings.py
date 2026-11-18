@@ -9,12 +9,23 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 FROZEN = getattr(sys, "frozen", False)
 DOSSIER_DONNEES = Path(os.getcwd()) if FROZEN else BASE_DIR
 
-SECRET_KEY = os.environ.get(
-    "DJANGO_SECRET_KEY",
-    "django-insecure-dev-key-change-me-in-production",
-)
 DEBUG = os.environ.get("DJANGO_DEBUG", "1") == "1"
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
+if not SECRET_KEY:
+    if DEBUG:
+        SECRET_KEY = "django-insecure-dev-key-change-me-in-production"
+    else:
+        # Hebergement : cle efemere par demarrage si aucune cle fournie (les sessions
+        # seront invalidees a chaque redemarrage ; definir DJANGO_SECRET_KEY en prod).
+        import secrets as _secrets
+        SECRET_KEY = _secrets.token_urlsafe(50)
+        print("ATTENTION : DJANGO_SECRET_KEY non defini, cle efemere generee pour ce demarrage.")
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "*").split(",")
+CSRF_TRUSTED_ORIGINS = [
+    o.strip() for o in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",") if o.strip()
+]
+# Derriere un proxy/gateway HTTPS (hebergement) :
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -28,6 +39,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -63,6 +75,13 @@ DATABASES = {
     }
 }
 
+# Hebergement avec base geree (ex. Postgres managée Mistral fournie via DATABASE_URL) :
+_DATABASE_URL = os.environ.get("DATABASE_URL")
+if _DATABASE_URL:
+    import dj_database_url
+
+    DATABASES["default"] = dj_database_url.parse(_DATABASE_URL, conn_max_age=600)
+
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
@@ -77,6 +96,11 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATIC_ROOT = DOSSIER_DONNEES / "staticfiles"
+
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedStaticFilesStorage"},
+}
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

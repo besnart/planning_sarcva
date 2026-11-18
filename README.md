@@ -9,6 +9,51 @@ automatique des postes par quadrimestre et modification manuelle possible ensuit
 
 ## Installation et lancement
 
+### Obtenir une URL publique (hébergement, sans rien installer localement)
+
+Deux options, au choix :
+
+**Option A — GitHub Codespaces (le plus simple, 100 % clics).** Sur la page de la
+branche, bouton vert **Code → Codespaces → Create codespace**. Le conteneur démarre
+tout seul (`.devcontainer/` : install, migrations, données de démo, serveur sur le
+port 8000). Ouvrez l'onglet **Ports**, clic droit sur le port 8000 → **Public**, puis
+partagez l'URL `https://<codespace>-8000.app.github.dev` (le planning est public en
+lecture ; comptes de démo `admin`/`demo`, `bernard`/`demo`). Nécessite un compte
+GitHub (quotas Codespaces gratuits inclus).
+
+**Option B — Mistral App (URL de production sur l'infrastructure Mistral).** Le dépôt
+contient déjà `mistral.json` + `deploy/Dockerfile` + `deploy/entrypoint.sh` (base
+Postgres managée fournie automatiquement via `DATABASE_URL`). Prérequis : fusionner la
+PR sur `main`, connecter GitHub à votre compte Mistral et installer
+[l'app GitHub Mistral](https://github.com/apps/mistralai) sur ce dépôt, et un plan
+incluant Apps. Puis, depuis un clone du dépôt :
+
+```bash
+mistral login        # une seule fois, validation dans le navigateur
+mistral deploy       # construit le commit poussé sur main et publie l'URL
+```
+
+L'URL publique est affichée à la fin du deploy. Secrets à définir dans l'onglet
+**Secrets** de l'app dans Studio : `DJANGO_SECRET_KEY` (obligatoire), `SEED_DEMO=1` +
+`DEMO_PASSWORD` (données de démo), `CSRF_TRUSTED_ORIGINS=https://<url-de-l-app>`.
+
+**Option C — votre propre serveur (VPS/Docker)** : `docker build -t planning-sarcva .`
+puis `docker run -p 8000:8000 -e DJANGO_SECRET_KEY=... -e DJANGO_DEBUG=0
+-e CSRF_TRUSTED_ORIGINS=https://votre-domaine planning-sarcva` (voir `deploy/Dockerfile` ;
+`requirements-hosting.txt` ajoute gunicorn + Postgres via `DATABASE_URL`).
+
+### Version hors ligne téléchargeable, SANS synchronisation
+
+L'exécutable des releases (voir ci-dessous) est **strictement hors ligne** : base
+SQLite locale (`db.sqlite3` à côté de l'exe), **aucun appel réseau sortant, aucune
+synchronisation** avec une version en ligne. Pour transférer ponctuellement des
+données d'une instance à l'autre, utiliser l'export/import **manuel** :
+
+```bash
+python manage.py exporter_donnees snapshot.json         # sur l'instance en ligne
+python manage.py importer_donnees snapshot.json --vider # dans l'exe hors ligne
+```
+
 ### Sans aucune ligne de commande (100 % visuel)
 
 1. Télécharger le code de la branche : ouvrir
