@@ -9,5 +9,8 @@
       "label": "Planning SARCVA",
       "onAutoForward": "openPreview"
     }
+  },
+  "remoteEnv": {
+    "X_FRAME_OPTIONS": ""
   }
 }

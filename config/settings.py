@@ -37,6 +37,13 @@ INSTALLED_APPS = [
     "planning",
 ]
 
+# X-Frame-Options : DENY par defaut (anti-clickjacking). Dans un Codespace, l'aperçu
+# integre de VS Code charge l'app en iframe cross-origin -> ERR_BLOCKED_BY_RESPONSE ;
+# le devcontainer definit X_FRAME_OPTIONS="" pour desactiver l'en-tete en demo.
+# En production, laisser DENY (ou SAMEORIGIN) et ouvrir l'app dans un vrai onglet.
+_X_FRAME_OPTIONS = os.environ.get("X_FRAME_OPTIONS", "DENY")
+X_FRAME_OPTIONS = _X_FRAME_OPTIONS if _X_FRAME_OPTIONS else None
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
@@ -45,8 +52,9 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
-    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+if X_FRAME_OPTIONS is not None:
+    MIDDLEWARE.append("django.middleware.clickjacking.XFrameOptionsMiddleware")
 
 ROOT_URLCONF = "config.urls"
 

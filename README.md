@@ -73,6 +73,13 @@ python manage.py importer_donnees snapshot.json --vider # dans l'exe hors ligne
 
 Comptes de démo : `admin` (Super Administrateur), `bernard`, `caron` (Utilisateurs).
 
+**Dépannage Codespaces** : si l'aperçu intégré de VS Code affiche `ERR_BLOCKED_BY_RESPONSE`,
+c'est l'en-tête `X-Frame-Options: DENY` qui bloque le chargement en iframe. Deux solutions :
+ouvrir l'URL dans un **vrai onglet de navigateur** (onglet Ports → icône globe « Open in Browser",
+ou copier l'URL publique dans Opera/Chrome), ou reconstruire le Codespace après ce commit
+(le devcontainer définit `X_FRAME_OPTIONS=""` pour autoriser l'aperçu en démo ; en production,
+garder `DENY`).
+
 **Dépannage** : laissez la fenêtre noire (console) ouverte — la fermer arrête le serveur.
 Si le navigateur affiche « site inaccessible / ERR_CONNECTION_REFUSED », attendez le
 message « ouverture du navigateur » dans la console (le navigateur ne s'ouvre plus
